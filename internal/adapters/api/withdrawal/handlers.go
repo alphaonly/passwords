@@ -67,7 +67,7 @@ func (h *handler) PostWithdraw() http.HandlerFunc {
 				return
 			}
 			if errors.Is(err, withdrawal.ErrOrderInvalid) {
-				api.HTTPErrorW(w, "account number invalid", err, http.StatusUnprocessableEntity)
+				api.HTTPErrorW(w, "Account number invalid", err, http.StatusUnprocessableEntity)
 				return
 			}
 			if errors.Is(err, withdrawal.ErrInternal) {

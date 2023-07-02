@@ -6,32 +6,32 @@ package mocks
 
 import (
 	context "context"
-	user "github.com/alphaonly/multipass/internal/domain/user"
 	gomock "github.com/golang/mock/gomock"
+	user "passwords/internal/domain/user"
 	reflect "reflect"
 )
 
 // MockStorage is a mock of Storage interface
 type MockStorage struct {
-	ctrl     *gomock.Controller
-	recorder *MockStorageMockRecorder
+	ctrl       *gomock.Controller
+	recAccount *MockStorageMockRecAccount
 }
 
-// MockStorageMockRecorder is the mock recorder for MockStorage
-type MockStorageMockRecorder struct {
+// MockStorageMockRecAccount is the mock recAccount for MockStorage
+type MockStorageMockRecAccount struct {
 	mock *MockStorage
 }
 
 // NewMockStorage creates a new mock instance
 func NewMockStorage(ctrl *gomock.Controller) *MockStorage {
 	mock := &MockStorage{ctrl: ctrl}
-	mock.recorder = &MockStorageMockRecorder{mock}
+	mock.recAccount = &MockStorageMockRecAccount{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
-	return m.recorder
+func (m *MockStorage) EXPECT() *MockStorageMockRecAccount {
+	return m.recAccount
 }
 
 // GetUser mocks base method
@@ -44,7 +44,7 @@ func (m *MockStorage) GetUser(arg0 context.Context, arg1 string) (*user.User, er
 }
 
 // GetUser indicates an expected call of GetUser
-func (mr *MockStorageMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecAccount) GetUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockStorage)(nil).GetUser), arg0, arg1)
 }
@@ -58,7 +58,7 @@ func (m *MockStorage) SaveUser(arg0 context.Context, arg1 *user.User) error {
 }
 
 // SaveUser indicates an expected call of SaveUser
-func (mr *MockStorageMockRecorder) SaveUser(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecAccount) SaveUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUser", reflect.TypeOf((*MockStorage)(nil).SaveUser), arg0, arg1)
 }

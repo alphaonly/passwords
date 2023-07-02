@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/alphaonly/multipass/internal/pkg/common/logging"
-	"github.com/alphaonly/multipass/internal/pkg/dbclient"
 	"log"
+	"passwords/internal/pkg/common/logging"
+	"passwords/internal/pkg/dbclient"
 	"reflect"
 	"time"
 

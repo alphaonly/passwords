@@ -2,7 +2,7 @@ package mocks
 
 import (
 	"context"
-	"github.com/alphaonly/multipass/internal/domain/user"
+	"passwords/internal/domain/user"
 )
 
 type service struct {
@@ -49,8 +49,4 @@ func (sr service) AuthenticateUser(ctx context.Context, u *user.User) (err error
 
 func (sr service) CheckIfUserAuthorized(ctx context.Context, login string, password string) (ok bool, err error) {
 	return true, nil
-}
-
-func (sr service) GetUserBalance(ctx context.Context, userName string) (response *user.BalanceResponseDTO, err error) {
-	return &user.BalanceResponseDTO{Current: 0, Withdrawn: 0}, nil
 }

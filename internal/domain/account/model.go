@@ -2,57 +2,35 @@ package account
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
-	"strconv"
-
-	"github.com/alphaonly/passwords/internal/schema"
+	"passwords/internal/schema"
 )
 
 type Account struct {
-	Account  string `json:"account"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-
-	Created schema.CreatedTime `json:"uploaded_at"`
+	Account     string             `json:"account"`
+	User        string             `json:"user"`
+	Password    string             `json:"password,omitempty"`
+	Description string             `json:"description,omitempty"`
+	Created     schema.CreatedTime `json:"uploaded_at"`
 }
 
-type orderType struct {
+type AType struct {
 	Code int64
 	Text string
 }
 
-var (
-	NewOrder        = orderType{1, "NEW"}
-	ProcessingOrder = orderType{2, "PROCESSING"}
-	InvalidOrder    = orderType{3, "INVALID"}
-	ProcessedOrder  = orderType{4, "PROCESSED"}
-)
-var OrderTypesByCode = map[int64]orderType{
-	NewOrder.Code:        NewOrder,
-	ProcessingOrder.Code: ProcessingOrder,
-	InvalidOrder.Code:    InvalidOrder,
-	ProcessedOrder.Code:  ProcessedOrder}
+type Accounts map[string]Account
 
-var OrderTypesByText = map[string]orderType{
-	NewOrder.Text:        NewOrder,
-	ProcessingOrder.Text: ProcessingOrder,
-	InvalidOrder.Text:    InvalidOrder,
-	ProcessedOrder.Text:  ProcessedOrder}
+func (a Accounts) MarshalJSON() ([]byte, error) {
 
-type Orders map[int64]Account
-
-func (o Orders) MarshalJSON() ([]byte, error) {
-
-	oArray := make([]Account, len(o))
+	oArray := make([]Account, len(a))
 	i := 0
-	for k, v := range o {
-		oNumb := strconv.FormatInt(k, 10)
+	for _, v := range a {
 		oArray[i] = Account{
-			Account: oNumb,
-			Status:  v.Status,
-			Accrual: v.Accrual,
-			Created: v.Created,
+			Account:     v.Account,
+			User:        v.User,
+			Password:    v.Password,
+			Description: v.Description,
+			Created:     v.Created,
 		}
 		i++
 	}
@@ -62,17 +40,13 @@ func (o Orders) MarshalJSON() ([]byte, error) {
 	}
 	return bytes, nil
 }
-func (o Orders) UnmarshalJSON(b []byte) error {
+func (a Accounts) UnmarshalJSON(b []byte) error {
 	var oArray []Account
 	if err := json.Unmarshal(b, &oArray); err != nil {
 		return err
 	}
 	for _, v := range oArray {
-		OrderInt, err := strconv.ParseInt(v.Account, 10, 64)
-		if err != nil {
-			log.Fatal(fmt.Errorf("cannot convert account number %v to string: %w", OrderInt, err))
-		}
-		o[OrderInt] = v
+		a[v.Account] = v
 	}
 	return nil
 }

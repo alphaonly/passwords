@@ -57,29 +57,29 @@ func (h *handler) PostOrders() http.HandlerFunc {
 		orderNumber, err := h.Service.ValidateOrderNumber(r.Context(), string(OrderNumberByte), string(usr))
 		if err != nil {
 			if errors.Is(err, order.ErrBadUserOrOrder) {
-				api.HTTPErrorW(w, fmt.Sprintf("account number  %v insufficient format", orderNumber), err, http.StatusBadRequest)
+				api.HTTPErrorW(w, fmt.Sprintf("Account number  %v insufficient format", orderNumber), err, http.StatusBadRequest)
 				return
 			}
 
 			if errors.Is(err, order.ErrNoLuhnNumber) {
-				api.HTTPErrorW(w, fmt.Sprintf("account %v insufficient format", orderNumber), err, http.StatusUnprocessableEntity)
+				api.HTTPErrorW(w, fmt.Sprintf("Account %v insufficient format", orderNumber), err, http.StatusUnprocessableEntity)
 				return
 			}
 			if strings.Contains(err.Error(), "409") {
 				if errors.Is(err, order.ErrAnotherUsersOrder) {
 				}
-				api.HTTPErrorW(w, fmt.Sprintf("account %v exists", orderNumber), err, http.StatusConflict)
+				api.HTTPErrorW(w, fmt.Sprintf("Account %v exists", orderNumber), err, http.StatusConflict)
 				return
 			}
 			if errors.Is(err, order.ErrOrderNumberExists) {
 			}
 			if strings.Contains(err.Error(), "200") {
-				log.Printf("account %v exists: %v", orderNumber, err.Error())
+				log.Printf("Account %v exists: %v", orderNumber, err.Error())
 				w.WriteHeader(http.StatusOK)
 				return
 			}
 		}
-		//Create object for a new account
+		//Create object for a new Account
 		o := order.Order{
 			Order:   string(OrderNumberByte),
 			User:    string(usr),
@@ -88,7 +88,7 @@ func (h *handler) PostOrders() http.HandlerFunc {
 		}
 		err = h.Storage.SaveOrder(r.Context(), o)
 		if err != nil {
-			api.HTTPErrorW(w, fmt.Sprintf("account's number %v not saved", orderNumber), err, http.StatusInternalServerError)
+			api.HTTPErrorW(w, fmt.Sprintf("Account's number %v not saved", orderNumber), err, http.StatusInternalServerError)
 			return
 		}
 		//Response
@@ -116,7 +116,7 @@ func (h *handler) GetOrders() http.HandlerFunc {
 		//Response
 		bytes, err := json.Marshal(orderList)
 		if err != nil {
-			api.HTTPErrorW(w, fmt.Sprintf("user %v account list json marshal error", userName), err, http.StatusInternalServerError)
+			api.HTTPErrorW(w, fmt.Sprintf("user %v Account list json marshal error", userName), err, http.StatusInternalServerError)
 			return
 		}
 

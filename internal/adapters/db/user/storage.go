@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/alphaonly/multipass/internal/pkg/common/logging"
-	"github.com/alphaonly/multipass/internal/pkg/dbclient"
-	"github.com/alphaonly/multipass/internal/pkg/dbclient/postgres"
 	"log"
+	"passwords/internal/pkg/common/logging"
+	"passwords/internal/pkg/dbclient"
+	"passwords/internal/pkg/dbclient/postgres"
 	"strings"
 
-	"github.com/alphaonly/multipass/internal/domain/user"
+	"passwords/internal/domain/user"
 )
 
 type userStorage struct {
@@ -33,7 +33,7 @@ func (s userStorage) GetUser(ctx context.Context, name string) (u *user.User, er
 	defer conn.Release()
 	d := DBUsersDTO{userID: sql.NullString{String: name, Valid: true}}
 	row := conn.QueryRow(ctx, selectLineUsersTable, &d.userID)
-	err = row.Scan(&d.userID, &d.password, &d.accrual, &d.withdrawal)
+	err = row.Scan(&d.userID, &d.password, &d.name, &d.surname, &d.phone)
 	if err != nil {
 		log.Printf("QueryRow failed: %v\n", err)
 		if strings.Contains(err.Error(), "no rows in result set") {
@@ -42,10 +42,11 @@ func (s userStorage) GetUser(ctx context.Context, name string) (u *user.User, er
 		return nil, err
 	}
 	return &user.User{
-		User:       d.userID.String,
-		Password:   d.password.String,
-		Accrual:    d.accrual.Float64,
-		Withdrawal: d.withdrawal.Float64,
+		User:     d.userID.String,
+		Password: d.password.String,
+		Name:     d.name.String,
+		Surname:  d.surname.String,
+		Phone:    d.phone.String,
 	}, nil
 }
 
@@ -60,13 +61,14 @@ func (s userStorage) SaveUser(ctx context.Context, u *user.User) (err error) {
 	defer conn.Release()
 
 	d := DBUsersDTO{
-		userID:     sql.NullString{String: u.User, Valid: true},
-		password:   sql.NullString{String: u.Password, Valid: true},
-		accrual:    sql.NullFloat64{Float64: u.Accrual, Valid: true},
-		withdrawal: sql.NullFloat64{Float64: u.Withdrawal, Valid: true},
+		userID:   sql.NullString{String: u.User, Valid: true},
+		password: sql.NullString{String: u.Password, Valid: true},
+		name:     sql.NullString{String: u.Name, Valid: true},
+		surname:  sql.NullString{String: u.Surname, Valid: true},
+		phone:    sql.NullString{String: u.Phone, Valid: true},
 	}
 
-	tag, err := conn.Exec(ctx, createOrUpdateIfExistsUsersTable, d.userID, d.password, d.accrual, d.withdrawal)
+	tag, err := conn.Exec(ctx, createOrUpdateIfExistsUsersTable, d.userID, d.password, d.name, d.surname, d.phone)
 	logging.LogFatalf(postgres.Message[3], err)
 	log.Println(tag)
 	return err

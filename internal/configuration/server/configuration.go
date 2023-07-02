@@ -1,4 +1,4 @@
-package configuration
+package server
 
 import (
 	"encoding/json"
@@ -12,18 +12,15 @@ import (
 const ServerDefaultJSON = `{
 "RUN_ADDRESS":"localhost:8080",
 "DATABASE_URI": "postgres://postgres:mypassword@localhost:5432/yandex",
-"ACCRUAL_SYSTEM_ADDRESS":"http://localhost:8080",
-"RESTORE":true,"KEY":"",
-"ACCRUAL_TIME":200
+"AUTH_TIMEOUT":200
 }`
 
 type ServerConfiguration struct {
-	RunAddress           string `json:"RUN_ADDRESS,omitempty"`
-	Port                 string `json:"PORT,omitempty"`
-	DatabaseURI          string `json:"DATABASE_URI,omitempty"`
-	AccrualSystemAddress string `json:"ACCRUAL_SYSTEM_ADDRESS,omitempty"`
-	AccrualTime          int64  `json:"ACCRUAL_TIME,omitempty"`
-	EnvChanged           map[string]bool
+	RunAddress  string `json:"RUN_ADDRESS,omitempty"`
+	Port        string `json:"PORT,omitempty"`
+	DatabaseURI string `json:"DATABASE_URI,omitempty"`
+	AuthTimeout int    `json:"ACCRUAL_TIME,omitempty"`
+	EnvChanged  map[string]bool
 }
 
 type ServerConfigurationOption func(*ServerConfiguration)
@@ -57,10 +54,10 @@ func NewServerConf(options ...ServerConfigurationOption) *ServerConfiguration {
 
 func UpdateSCFromEnvironment(c *ServerConfiguration) {
 	c.RunAddress = getEnv("RUN_ADDRESS", &StrValue{c.RunAddress}, c.EnvChanged).(string)
-	c.AccrualSystemAddress = getEnv("ACCRUAL_SYSTEM_ADDRESS", &StrValue{c.AccrualSystemAddress}, c.EnvChanged).(string)
 	//PORT is derived from ADDRESS
 	c.Port = ":" + strings.Split(c.RunAddress, ":")[1]
 	c.DatabaseURI = getEnv("DATABASE_URI", &StrValue{c.DatabaseURI}, c.EnvChanged).(string)
+	c.AuthTimeout = getEnv("AUTH_TIMEOUT", &IntValue{c.AuthTimeout}, c.EnvChanged).(int)
 }
 
 func UpdateSCFromFlags(c *ServerConfiguration) {
@@ -69,8 +66,8 @@ func UpdateSCFromFlags(c *ServerConfiguration) {
 
 	var (
 		a = flag.String("a", dc.RunAddress, "Domain name and :port")
-		r = flag.String("r", dc.AccrualSystemAddress, "Restore from external storage:true/false")
-		d = flag.String("d", dc.DatabaseURI, "database destination string")
+		t = flag.Int("t", dc.AuthTimeout, "The timeout, user authorized, in seconds")
+		d = flag.String("d", dc.DatabaseURI, "Database destination string")
 	)
 	flag.Parse()
 
@@ -82,9 +79,9 @@ func UpdateSCFromFlags(c *ServerConfiguration) {
 		log.Printf(message, "RUN_ADDRESS", c.RunAddress)
 		log.Printf(message, "PORT", c.Port)
 	}
-	if !c.EnvChanged["ACCRUAL_SYSTEM_ADDRESS"] {
-		c.AccrualSystemAddress = *r
-		log.Printf(message, "ACCRUAL_SYSTEM_ADDRESS", c.AccrualSystemAddress)
+	if !c.EnvChanged["AUTH_TIMEOUT"] {
+		c.AuthTimeout = *t
+		log.Printf(message, "AUTH_TIMEOUT", c.AuthTimeout)
 	}
 	if !c.EnvChanged["DATABASE_URI"] {
 		c.DatabaseURI = *d
@@ -146,13 +143,6 @@ func (v *BoolValue) Set(s string) {
 	if err != nil {
 		log.Fatal("Bool Parse error")
 	}
-}
-func NewBoolValue(s string) VariableValue {
-	changedValue, err := strconv.ParseBool(s)
-	if err != nil {
-		log.Fatal("Bool Parse error")
-	}
-	return &BoolValue{value: changedValue}
 }
 
 func getEnv(variableName string, variableValue VariableValue, changed map[string]bool) (changedValue interface{}) {

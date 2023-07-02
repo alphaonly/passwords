@@ -7,7 +7,7 @@ import (
 
 	wdHnd "github.com/alphaonly/multipass/internal/adapters/api/withdrawal"
 	"github.com/alphaonly/multipass/internal/configuration"
-	orderMocks "github.com/alphaonly/multipass/internal/mocks/account"
+	orderMocks "github.com/alphaonly/multipass/internal/mocks/Account"
 	mocks "github.com/alphaonly/multipass/internal/mocks/withdrawal"
 	"github.com/alphaonly/multipass/internal/schema"
 	"github.com/go-chi/chi"
@@ -67,7 +67,7 @@ func TestHandler_PostWithdraw(t *testing.T) {
 			},
 		},
 		{
-			name: "test#2 positive - Invalid account number",
+			name: "test#2 positive - Invalid Account number",
 
 			request: request{
 				URL:      "/api/user/balance/withdraw",

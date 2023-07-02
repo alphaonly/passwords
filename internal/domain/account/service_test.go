@@ -3,51 +3,51 @@ package account_test
 import (
 	"context"
 	"errors"
+	"passwords/internal/domain/account"
 
 	"log"
 	"testing"
 
-	"github.com/alphaonly/multipass/internal/domain/order"
-	mockOrder "github.com/alphaonly/multipass/internal/mocks/account"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	mockAccount "passwords/internal/mocks/account"
 )
 
-func TestGetUsersOrders(t *testing.T) {
+func TestGetUsersAccounts(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	s := mockOrder.NewMockStorage(ctrl)
+	s := mockAccount.NewMockStorage(ctrl)
 
 	tests := []struct {
-		name         string
-		userName     string
-		returnOrders order.Orders
-		returnErr    error
-		want         error
+		name           string
+		userName       string
+		returnAccounts account.Accounts
+		returnErr      error
+		want           error
 	}{
 		{
-			name:         "#1 Positive",
-			userName:     "testuser",
-			returnOrders: order.Orders{1233: order.Order{Order: "1233", User: "testuser", Status: order.NewOrder.Text}},
-			returnErr:    nil,
-			want:         nil,
+			name:           "#1 Positive",
+			userName:       "testuser",
+			returnAccounts: account.Accounts{1233: account.Account{Account: "1233", User: "testuser"}},
+			returnErr:      nil,
+			want:           nil,
 		},
 		{
-			name:     "#2 Negative - no orders for user",
+			name:     "#2 Negative - no Accounts for user",
 			userName: "testuser",
-			// returnOrders: account.Orders{1233: account.Account{Account: "1233", User: "testuser2", Status: account.NewOrder.Text}},
-			returnErr: order.ErrNoOrders,
-			want:      order.ErrNoOrders,
+			// returnAccounts: account.Accounts{1233: account.Account{Account: "1233", User: "testuser2", Status: account.NewAccount.Text}},
+			returnErr: account.ErrNoAccounts,
+			want:      account.ErrNoAccounts,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(tst *testing.T) {
 
-			s.EXPECT().GetOrdersList(context.Background(), tt.userName).Return(tt.returnOrders, tt.returnErr)
-			service := order.NewService(s)
+			s.EXPECT().GetAccountsList(context.Background(), tt.userName).Return(tt.returnAccounts, tt.returnErr)
+			service := account.NewService(s)
 
-			_, err := service.GetUsersOrders(context.Background(), tt.userName)
+			_, err := service.GetUsersAccounts(context.Background(), tt.userName)
 			log.Println(err)
 
 			if !assert.Equal(t, true, errors.Is(err, tt.want)) {

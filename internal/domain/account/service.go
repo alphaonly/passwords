@@ -3,22 +3,18 @@ package account
 import (
 	"context"
 	"fmt"
-	"strconv"
-
-	"github.com/theplant/luhn"
 )
 
 var (
-	ErrBadUserOrOrder    = fmt.Errorf("400 user is empty or bad account number")
-	ErrNoOrders          = fmt.Errorf("204 no orders")
-	ErrNoLuhnNumber      = fmt.Errorf("422 not Lihn number")
-	ErrOrderNumberExists = fmt.Errorf("200 account exists with user")
-	ErrAnotherUsersOrder = fmt.Errorf("409 account exists with another user")
+	ErrBadUserAccount      = fmt.Errorf("400 user is empty or bad account number")
+	ErrNoAccounts          = fmt.Errorf("204 no Accounts")
+	ErrNoLuhnNumber        = fmt.Errorf("422 not Lihn number")
+	ErrAccountNumberExists = fmt.Errorf("200 account exists with user")
+	ErrAnotherUsersAccount = fmt.Errorf("409 account exists with another user")
 )
 
 type Service interface {
-	GetUsersOrders(ctx context.Context, userName string) (orders Orders, err error)
-	ValidateOrderNumber(ctx context.Context, orderNumberStr string, user string) (orderNum int64, err error)
+	GetUsersAccounts(ctx context.Context, userName string) (Accounts Accounts, err error)
 }
 
 type service struct {
@@ -29,50 +25,18 @@ func NewService(s Storage) (sr Service) {
 	return service{Storage: s}
 }
 
-func (sr service) GetUsersOrders(ctx context.Context, userName string) (orders Orders, err error) {
+func (sr service) GetUsersAccounts(ctx context.Context, userName string) (Accounts Accounts, err error) {
 	// data validation
 	if userName == "" {
-		ErrBadUserOrOrder = fmt.Errorf("400 user is empty %v (%w)", userName, ErrBadUserOrOrder)
-		return nil, ErrBadUserOrOrder
+		ErrBadUserAccount = fmt.Errorf("400 user is empty %v (%w)", userName, ErrBadUserAccount)
+		return nil, ErrBadUserAccount
 	}
-	//getOrders
-	orderslist, err := sr.Storage.GetOrdersList(ctx, userName)
+	//getAccounts
+	Accountslist, err := sr.Storage.GetAccountsList(ctx, userName)
 	if err != nil {
-		ErrNoOrders = fmt.Errorf(err.Error()+"(%w)", ErrNoOrders)
-		ErrNoOrders = fmt.Errorf("204 no orders for user %v %w", userName, ErrNoOrders)
-		return nil, ErrNoOrders
+		ErrNoAccounts = fmt.Errorf(err.Error()+"(%w)", ErrNoAccounts)
+		ErrNoAccounts = fmt.Errorf("204 no Accounts for user %v %w", userName, ErrNoAccounts)
+		return nil, ErrNoAccounts
 	}
-	return orderslist, nil
-}
-
-func (sr service) ValidateOrderNumber(ctx context.Context, orderNumberStr string, user string) (orderNum int64, err error) {
-
-	orderNumber, err := strconv.Atoi(orderNumberStr)
-	if err != nil {
-		ErrBadUserOrOrder = fmt.Errorf(err.Error()+"(%w)", ErrBadUserOrOrder)
-		ErrBadUserOrOrder = fmt.Errorf("400 account number bad number value %w", ErrBadUserOrOrder)
-		return 0, ErrBadUserOrOrder
-	}
-	// account number format check
-	if orderNumber <= 0 {
-		ErrBadUserOrOrder = fmt.Errorf("400 no account number zero or less(%w)", ErrBadUserOrOrder)
-		return int64(orderNumber), ErrBadUserOrOrder
-	}
-	// orderNumber number validation according Luhn algorithm
-	if !luhn.Valid(orderNumber) {
-		ErrNoLuhnNumber = fmt.Errorf("422 no account number with Luhn: %v(%w)", orderNumber, ErrNoLuhnNumber)
-		return int64(orderNumber), ErrNoLuhnNumber
-	}
-	// Check if orderNumber had already existed
-	orderChk, err := sr.Storage.GetOrder(ctx, int64(orderNumber))
-	if err != nil {
-		return int64(orderNumber), nil
-	}
-	//Account exists, check user
-	if user == orderChk.User {
-		ErrOrderNumberExists = fmt.Errorf("200 account %v exists with user %v(%w)", orderNumber, user, ErrOrderNumberExists)
-		return int64(orderNumber), ErrOrderNumberExists
-	}
-	ErrAnotherUsersOrder = fmt.Errorf("409 account %v exists with another user %v(%w)", orderNumber, orderChk.User, ErrAnotherUsersOrder)
-	return int64(orderNumber), ErrAnotherUsersOrder
+	return Accountslist, nil
 }

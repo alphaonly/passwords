@@ -7,7 +7,7 @@ import (
 	"github.com/alphaonly/multipass/internal/adapters/api/order"
 
 	"github.com/alphaonly/multipass/internal/configuration"
-	mocks "github.com/alphaonly/multipass/internal/mocks/account"
+	mocks "github.com/alphaonly/multipass/internal/mocks/Account"
 	userMocks "github.com/alphaonly/multipass/internal/mocks/user"
 	"github.com/alphaonly/multipass/internal/schema"
 	"github.com/go-chi/chi"
