@@ -32,7 +32,7 @@ func (sr service) GetUsersAccounts(ctx context.Context, userName string) (accoun
 	}
 	//getaccounts
 	if userName == testUser {
-		return account.Accounts{1122: testaccount1122}, nil
+		return account.Accounts{"1122": testaccount1122}, nil
 	}
 	return nil, account.ErrNoAccounts
 

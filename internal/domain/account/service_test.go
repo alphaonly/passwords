@@ -28,7 +28,7 @@ func TestGetUsersAccounts(t *testing.T) {
 		{
 			name:           "#1 Positive",
 			userName:       "testuser",
-			returnAccounts: account.Accounts{1233: account.Account{Account: "1233", User: "testuser"}},
+			returnAccounts: account.Accounts{"1233": account.Account{Account: "1233", User: "testuser"}},
 			returnErr:      nil,
 			want:           nil,
 		},

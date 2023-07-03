@@ -7,7 +7,7 @@ package mocks
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	account "passwords/internal/domain/Account"
+	account "passwords/internal/domain/account"
 	reflect "reflect"
 )
 
@@ -50,7 +50,7 @@ func (mr *MockStorageMockRecAccount) GetNewAccountsList(arg0 interface{}) *gomoc
 }
 
 // GetAccount mocks base method
-func (m *MockStorage) GetAccount(arg0 context.Context, arg1 int64) (*account.Account, error) {
+func (m *MockStorage) GetAccount(arg0 context.Context, arg1 string) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccount", arg0, arg1)
 	ret0, _ := ret[0].(*account.Account)
