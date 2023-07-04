@@ -8,17 +8,43 @@ import (
 	"strconv"
 )
 
-const AgentDefaultJSON = `{"POLL_INTERVAL":"2s","REPORT_INTERVAL":"10s","ADDRESS":"localhost:8080","SCHEME":"http","USE_JSON":1,"KEY":"","RATE_LIMIT":1,"CRYPTO_KEY":""}`
+const ClientDefaultJSON = `{"ADDRESS":"localhost:8080"}`
 
-type AgentConfiguration struct {
+const COMMAND_HELP = `Commands: 	
+	For user's data:
+	NEW 	- registers new given user's data if the user does not exist,
+            	format: NEW  <name> <surname> <phone>  (for previously given login and password) 
+	
+	UPDATE	- updates user's data user's data is authorized by login and password
+				format: UPDATE <name> <surname> <phone>
+				there may be  sign "/" means the fields value is left unedited
+				and empty sign "*" means the field should be empty
+				Examples UPDATE Paul Anderson /    - phone remains untouched 
+	For user's accounts data:
+	
+	ADD     - adds new account data for authorized user, 
+				format: ADD <account> <password> <description>
+	
+	GET     - prints given user's account data to stdout if exists		   
+				format: GET <account>
+	
+	EDIT    - updates user's account data 
+				format: EDIT <account> <password> <description>
+	if the command is not given, it prints user's all accounts data to stdout		    	   
+`
+
+type ClientConfiguration struct {
 	Address    string `json:"ADDRESS,omitempty"`
+	Login      string `json:"LOGIN,omitempty"`
+	Password   string `json:"PASSWORD,omitempty"`
+	Command    string `json:"COMMAND,omitempty"`
 	EnvChanged map[string]bool
 }
 
-type AgentConfigurationOption func(*AgentConfiguration)
+type ClientConfigurationOption func(*ClientConfiguration)
 
-func UnMarshalAgentDefaults(s string) AgentConfiguration {
-	ac := AgentConfiguration{}
+func UnMarshalAgentDefaults(s string) ClientConfiguration {
+	ac := ClientConfiguration{}
 	err := json.Unmarshal([]byte(s), &ac)
 	if err != nil {
 		log.Fatal("cannot unmarshal server configuration")
@@ -26,16 +52,16 @@ func UnMarshalAgentDefaults(s string) AgentConfiguration {
 	return ac
 }
 
-func NewAgentConfiguration() *AgentConfiguration {
-	c := UnMarshalAgentDefaults(AgentDefaultJSON)
+func NewClientConfiguration() *ClientConfiguration {
+	c := UnMarshalAgentDefaults(ClientDefaultJSON)
 	c.EnvChanged = make(map[string]bool)
 
 	return &c
 
 }
 
-func NewAgentConf(options ...AgentConfigurationOption) *AgentConfiguration {
-	c := UnMarshalAgentDefaults(AgentDefaultJSON)
+func NewClientConf(options ...ClientConfigurationOption) *ClientConfiguration {
+	c := UnMarshalAgentDefaults(ClientDefaultJSON)
 	c.EnvChanged = make(map[string]bool)
 	for _, option := range options {
 		option(&c)
@@ -43,27 +69,42 @@ func NewAgentConf(options ...AgentConfigurationOption) *AgentConfiguration {
 	return &c
 }
 
-func UpdateACFromEnvironment(c *AgentConfiguration) {
+func UpdateCCFromEnvironment(c *ClientConfiguration) {
 
 	c.Address = getEnv("ADDRESS", &StrValue{c.Address}, c.EnvChanged).(string)
 
 }
 
-func UpdateACFromFlags(c *AgentConfiguration) {
-	dc := NewAgentConfiguration()
+func UpdateCCFromFlags(cc *ClientConfiguration) {
+	// cc = NewClientConfiguration()
 	var (
-		a = flag.String("a", dc.Address, "Domain name and :port")
+		a = flag.String("a", cc.Address, "Domain name and :port")
+		l = flag.String("l", cc.Login, "User login")
+		p = flag.String("p", cc.Password, "User password")
+		c = flag.String("c", cc.Command, COMMAND_HELP)
+
+		messageVariableUpdated  = "variable %v  has been overwritten from flags, value %v"
+		messageVariableReceived = "variable %v  received from flags, value %v"
 	)
 
 	flag.Parse()
 
-	//Если значение параметра из переменных окружения равно по умолчанию, то обновляем из флагов
-
-	message := "variable %v  updated from flags, value %v"
-	if !c.EnvChanged["ADDRESS"] {
-		c.Address = *a
-		log.Printf(message, "ADDRESS", c.Address)
+	if !cc.EnvChanged["ADDRESS"] {
+		cc.Address = *a
+		log.Printf(messageVariableUpdated, "ADDRESS", cc.Address)
 	}
+
+	cc.Login = *l
+	cc.EnvChanged["LOGIN"] = true
+	log.Printf(messageVariableReceived, "LOGIN", cc.Login)
+
+	cc.Password = *p
+	cc.EnvChanged["PASSWORD"] = true
+	log.Printf(messageVariableReceived, "PASSWORD", cc.Password)
+
+	cc.Command = *c
+	cc.EnvChanged["COMMAND"] = true
+	log.Printf(messageVariableReceived, "COMMAND", cc.Command)
 }
 
 type VariableValue interface {
