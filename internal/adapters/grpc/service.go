@@ -2,132 +2,119 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"log"
 	"sync"
 
-	common "github.com/alphaonly/harvester/internal/common/grpc/common"
-	pb "github.com/alphaonly/harvester/internal/common/grpc/proto"
-	"github.com/alphaonly/harvester/internal/common/logging"
-	"github.com/alphaonly/harvester/internal/schema"
-	storage "github.com/alphaonly/harvester/internal/server/storage/interfaces"
+	pb "passwords/internal/adapters/grpc/proto"
+	accountStorage "passwords/internal/domain/account"
+	userStorage "passwords/internal/domain/user"
+	"passwords/internal/pkg/common/logging"
 )
 
 type GRPCService struct {
 	pb.UnimplementedServiceServer
 
-	metrics sync.Map
-	storage storage.Storage      		//a storage to receive data
+	Users          sync.Map
+	UserStorage    userStorage.Storage    //a storage to set/get user data
+	AccountStorage accountStorage.Storage //a storage to set/get account data
 }
 
-//NewGRPCService - a factory to Metric gRPC server service, receives used storage implementation
-func NewGRPCService(storage storage.Storage) pb.ServiceServer {
-	return &GRPCService{storage: storage}
+// NewGRPCService - a factory to User gRPC server service, receives used storage implementation
+func NewGRPCService(storage userStorage.Storage) pb.ServiceServer {
+	return &GRPCService{UserStorage: storage}
 }
-//AddMetric - adds inbound metric data to storage
-func (s *GRPCService) AddMetric(ctx context.Context, in *pb.AddMetricRequest) (*pb.AddMetricResponse, error) {
-	var response pb.AddMetricResponse
 
-	metric := schema.Metrics{
-		ID:    in.Metric.Name,
-		MType: common.ConvertGrpcType(in.Metric.Type),
-		Delta: &in.Metric.Counter,
-		Value: &in.Metric.Gauge,
+// AddUser - adds inbound User data to storage
+func (s *GRPCService) AddUser(ctx context.Context, in *pb.AddUserRequest) (*pb.AddUserResponse, error) {
+	var response pb.AddUserResponse
+
+	//add user data
+	user := userStorage.User{
+		User:     in.User.User,
+		Password: in.User.Password,
+		Name:     in.User.Name,
+		Surname:  in.User.Surname,
+		Phone:    in.User.Phone,
 	}
-	//overwrite metric value
-	s.metrics.Store(metric.ID, metric)
-	log.Printf("metric %v saved through gRPC", metric)
+	//save User data
+	s.UserStorage.SaveUser(ctx, &user)
+	log.Printf("User %v saved through gRPC", user)
 	return &response, nil
 }
-//AddMetricMulti - adds metric data from a stream to storage 
-func (s *GRPCService) AddMetricMulti(in pb.Service_AddMetricMultiServer) error {
-	var (
-		request  = new(pb.AddMetricRequest)
-		response = new(pb.AddMetricResponse)
-		err      error
-	)
 
-	for {
-		//Receive request data
-		request, err = in.Recv()
-		if err == io.EOF {
-			break
-		}
-		logging.LogFatal(err)
+// GetAccount - gets user data by inbound user name from storage
+func (s *GRPCService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	var response pb.GetUserResponse
+	//get User data
+	u, err := s.UserStorage.GetUser(ctx, in.Login)
+	logging.LogPrintln(err)
 
-		if request.Metric.Name == "" {
-			err = fmt.Errorf("%w:%v", common.ErrNoMetricName, request.Metric.Name)
-			logging.LogPrintln(err)
-			response.Error = err.Error()
-			return err
-		}
+	log.Printf("User %v gotten through gRPC", u)
 
-		metric := schema.Metrics{
-			ID:    request.Metric.Name,
-			MType: common.ConvertGrpcType(request.Metric.Type),
-			Delta: &request.Metric.Counter,
-			Value: &request.Metric.Gauge,
-		}
-		//save metric
-		s.metrics.Store(metric.ID, metric)
-		log.Printf("metric %v saved through gRPC", metric)
-		
-		//send response
-		err=in.Send(response)
-		logging.LogFatal(err)
-	}
-	return err
+	response.User.Password = u.Password
+	response.User.Name = u.Name
+	response.User.Surname = u.Surname
+	response.User.Phone = u.Phone
+
+	return &response, err
+
 }
-func (s *GRPCService) GetMetric(context.Context, *pb.GetMetricRequest) (*pb.GetMetricResponse, error) {
-	//I do not need it, left for a while 
-	return nil, nil
-}
-func (s *GRPCService) GetMetricMulti(stream pb.Service_GetMetricMultiServer) error {
 
-	var (
-		request  = new(pb.GetMetricRequest)
-		response = new(pb.GetMetricResponse)
-		err      error
-	)
+// AddAccount - adds inbound Account data to storage
+func (s *GRPCService) AddAccount(ctx context.Context, in *pb.AddAccountRequest) (*pb.AddAccountResponse, error) {
+	var response pb.AddAccountResponse
 
-	for {
-		//Receive request data
-		request, err = stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		logging.LogFatal(err)
-		if request.Name == "" {
-			err = fmt.Errorf("%w:%v", common.ErrNoMetricName, request.Name)
-			logging.LogPrintln(err)
-			response.Error = err.Error()
-			return err
-		}
-		//get a value by the metric name
-		val, ok := s.metrics.Load(request.Name)
-		if !ok {
-			err = fmt.Errorf("%w:%v", common.ErrNoMetricInStorage, request.Name)
-			response.Error = err.Error()
-			logging.LogPrintln(err)
-			return nil
-		}
-		//recognize a gotten metric
-		metric, ok := val.(schema.Metrics)
-		if !ok {
-			logging.LogFatal(common.ErrInappropriateType)
-		}
-		//send metric data in response
-		response.Metric.Name = metric.ID
-		response.Metric.Type = common.ConvertMetricType(metric.MType)
-		if metric.Delta != nil {
-			response.Metric.Counter = *metric.Delta
-		}
-		if metric.Value != nil {
-			response.Metric.Gauge = *metric.Value
-		}
-		err = stream.Send(response)
-		logging.LogFatal(err)
+	//add Account data
+	Account := accountStorage.Account{
+		Account:     in.Account.Account,
+		User:        in.User,
+		Password:    in.Account.Password,
+		Description: in.Account.Description,
 	}
-	return err
+	//save Account data
+	err := s.AccountStorage.SaveAccount(ctx, Account)
+	logging.LogPrintln(err)
+
+	log.Printf("Account %v saved through gRPC", Account)
+	return &response, err
+}
+
+// GetAccount - gets account data by inbound user name from storage
+func (s *GRPCService) GetAccount(ctx context.Context, in *pb.GetAccountRequest) (*pb.GetAccountResponse, error) {
+	var response pb.GetAccountResponse
+	//get Account data
+	a, err := s.AccountStorage.GetAccount(ctx, in.User)
+	logging.LogPrintln(err)
+
+	log.Printf("Account %v gotten through gRPC", a)
+
+	response.Account.User = a.User
+	response.Account.AccountLogin = a.Account
+	response.Account.Password = a.Password
+	response.Account.Description = a.Description
+
+	return &response, err
+
+}
+
+func (s *GRPCService) GetAllUserAccounts(ctx context.Context, in *pb.GetAllAccountsRequest) (*pb.GetAllAccountsResponse, error){
+	var response pb.GetAllAccountsResponse
+
+	//Get all accounts by given user name
+	accounts,err:= s.AccountStorage.GetAccountsList(ctx,in.UserLogin)
+	logging.LogPrintln(err)
+
+	
+	for k,v := range accounts{
+		pbAccount := pb.Account{
+			User:v.User,
+			Account:v.Account,
+			AccountLogin: v.Account,
+
+
+		} 
+		response.Accounts=append (response.Accounts,&pbAccount)
+	}
+	 
+	return &response,err
 }

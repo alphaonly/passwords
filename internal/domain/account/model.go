@@ -6,8 +6,9 @@ import (
 )
 
 type Account struct {
+	User        string             `json:"user"`	
 	Account     string             `json:"account"`
-	User        string             `json:"user"`
+	Login		string			   `json:"login"`
 	Password    string             `json:"password,omitempty"`
 	Description string             `json:"description,omitempty"`
 	Created     schema.CreatedTime `json:"uploaded_at"`

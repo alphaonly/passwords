@@ -8,7 +8,7 @@ import (
 var (
 	ErrBadUserAccount      = fmt.Errorf("400 user is empty or bad account number")
 	ErrNoAccounts          = fmt.Errorf("204 no Accounts")
-	ErrNoLuhnNumber        = fmt.Errorf("422 not Lihn number")
+	ErrNoLuhnNumber        = fmt.Errorf("422 not Luhn number")
 	ErrAccountNumberExists = fmt.Errorf("200 account exists with user")
 	ErrAnotherUsersAccount = fmt.Errorf("409 account exists with another user")
 )
