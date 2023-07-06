@@ -12,7 +12,10 @@ var (
 )
 
 func CommandParse(command string) (*CommandParseResponseDTO, error) {
-	commandStrings := strings.Split(command, " ")
+	
+	commandStrings:=make([]string,10)
+	
+	commandStrings = strings.Split(command, " ")
 
 	switch commandStrings[0] {
 	case "NEW", "UPDATE":
