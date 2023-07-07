@@ -5,15 +5,9 @@ import (
 	"log"
 	"os"
 	"os/signal"
-
-	"passwords/internal/client/crypto"
-	"passwords/internal/common"
-
-	// cryptoCommon "passwords/internal/common/crypto"
-	"passwords/internal/pkg/common/logging"
-
-	grpcclient "passwords/internal/agent/grpc/client"
-	conf "passwords/internal/configuration"
+	conf "passwords/internal/configuration/client"
+	"passwords/internal/pkg/client"
+	grpcclient "passwords/internal/pkg/client/grpc/client"
 )
 
 var buildVersion = "N/A"
@@ -22,15 +16,15 @@ var buildCommit = "N/A"
 
 func main() {
 	//Build tags
-	common.PrintBuildTags(buildVersion, buildDate, buildCommit)
+	// common.PrintBuildTags(buildVersion, buildDate, buildCommit)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	//Configuration parameters
-	ac := conf.NewAgentConf(conf.UpdateACFromEnvironment, conf.UpdateACFromFlags)
+	cfg := conf.NewClientConf(conf.UpdateCCFromEnvironment, conf.UpdateCCFromFlags)
 
 	//grpc client
-	grpcClient := grpcclient.NewGRPCClient(ac.Address)
+	grpcClient := grpcclient.NewGRPCClient(cfg.Address)
 
 	//load public key pem file
 	// var cm cryptoCommon.AgentCertificateManager
@@ -41,8 +35,8 @@ func main() {
 	// 	cm = crypto.NewRSA().ReceivePublic(buf)
 	// 	logging.LogFatal(cm.Error())
 	// }
-	//Run agent
-	client.NewAgent(ac, grpcClient, cm).Run(ctx)
+	//Run client
+	client.NewClient(cfg, grpcClient).Run(ctx)
 	//wait SIGKILL
 	channel := make(chan os.Signal, 1)
 	//Graceful shutdown

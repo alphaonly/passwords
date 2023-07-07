@@ -12,8 +12,8 @@ import (
 	"log"
 	"os"
 
-	cryptoCommon "github.com/alphaonly/harvester/internal/common/crypto"
-	"github.com/alphaonly/harvester/internal/common/logging"
+	cryptoCommon "passwords/internal/common/crypto"
+	"passwords/internal/common/logging"
 )
 
 type RSA struct {
