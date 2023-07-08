@@ -8,4 +8,5 @@ type DBUsersDTO struct {
 	name     sql.NullString
 	surname  sql.NullString
 	phone    sql.NullString
+	created  sql.NullString
 }

@@ -1,11 +1,14 @@
 package user
 
+import "passwords/internal/schema"
+
 type User struct {
-	User     string `json:"login"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
-	Surname  string `json:"surname,omitempty"`
-	Phone    string `json:"phone,omitempty"`
+	User     string             `json:"login"`
+	Password string             `json:"password"`
+	Name     string             `json:"name"`
+	Surname  string             `json:"surname,omitempty"`
+	Phone    string             `json:"phone,omitempty"`
+	Created  schema.CreatedTime `json:"created,omitempty"`
 }
 
 func (u User) Equals(u2 *User) (ok bool) {

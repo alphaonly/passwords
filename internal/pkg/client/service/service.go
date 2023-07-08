@@ -23,7 +23,7 @@ type clientService interface {
 }
 
 type dataService interface {
-	AuthorizeUser(ctx context.Context, user string, password string) error
+	AuthorizeUser(ctx context.Context, user string, password string) (*userDomain.User, error)
 	AddNewUser(ctx context.Context, user userDomain.User) error
 	AddNewAccount(ctx context.Context, account accountDomain.Account) error
 	GetAllAccounts(ctx context.Context, user string) (accountDomain.Accounts, error)
