@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Service_AuthorizeUser_FullMethodName      = "/passwords.Service/AuthorizeUser"
+	Service_DisAuthorizeUser_FullMethodName   = "/passwords.Service/DisAuthorizeUser"
+	Service_CheckAuthorization_FullMethodName = "/passwords.Service/CheckAuthorization"
 	Service_AddUser_FullMethodName            = "/passwords.Service/AddUser"
 	Service_GetUser_FullMethodName            = "/passwords.Service/GetUser"
 	Service_AddAccount_FullMethodName         = "/passwords.Service/AddAccount"
@@ -32,6 +34,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
 	AuthorizeUser(ctx context.Context, in *AuthUserRequest, opts ...grpc.CallOption) (*AuthUserResponse, error)
+	DisAuthorizeUser(ctx context.Context, in *DisAuthUserRequest, opts ...grpc.CallOption) (*DisAuthUserResponse, error)
+	CheckAuthorization(ctx context.Context, in *CheckAuthUserRequest, opts ...grpc.CallOption) (*CheckAuthUserResponse, error)
 	AddUser(ctx context.Context, in *AddUserRequest, opts ...grpc.CallOption) (*AddUserResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
 	AddAccount(ctx context.Context, in *AddAccountRequest, opts ...grpc.CallOption) (*AddAccountResponse, error)
@@ -50,6 +54,24 @@ func NewServiceClient(cc grpc.ClientConnInterface) ServiceClient {
 func (c *serviceClient) AuthorizeUser(ctx context.Context, in *AuthUserRequest, opts ...grpc.CallOption) (*AuthUserResponse, error) {
 	out := new(AuthUserResponse)
 	err := c.cc.Invoke(ctx, Service_AuthorizeUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serviceClient) DisAuthorizeUser(ctx context.Context, in *DisAuthUserRequest, opts ...grpc.CallOption) (*DisAuthUserResponse, error) {
+	out := new(DisAuthUserResponse)
+	err := c.cc.Invoke(ctx, Service_DisAuthorizeUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serviceClient) CheckAuthorization(ctx context.Context, in *CheckAuthUserRequest, opts ...grpc.CallOption) (*CheckAuthUserResponse, error) {
+	out := new(CheckAuthUserResponse)
+	err := c.cc.Invoke(ctx, Service_CheckAuthorization_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -106,6 +128,8 @@ func (c *serviceClient) GetAllUserAccounts(ctx context.Context, in *GetAllAccoun
 // for forward compatibility
 type ServiceServer interface {
 	AuthorizeUser(context.Context, *AuthUserRequest) (*AuthUserResponse, error)
+	DisAuthorizeUser(context.Context, *DisAuthUserRequest) (*DisAuthUserResponse, error)
+	CheckAuthorization(context.Context, *CheckAuthUserRequest) (*CheckAuthUserResponse, error)
 	AddUser(context.Context, *AddUserRequest) (*AddUserResponse, error)
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
 	AddAccount(context.Context, *AddAccountRequest) (*AddAccountResponse, error)
@@ -120,6 +144,12 @@ type UnimplementedServiceServer struct {
 
 func (UnimplementedServiceServer) AuthorizeUser(context.Context, *AuthUserRequest) (*AuthUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuthorizeUser not implemented")
+}
+func (UnimplementedServiceServer) DisAuthorizeUser(context.Context, *DisAuthUserRequest) (*DisAuthUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DisAuthorizeUser not implemented")
+}
+func (UnimplementedServiceServer) CheckAuthorization(context.Context, *CheckAuthUserRequest) (*CheckAuthUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckAuthorization not implemented")
 }
 func (UnimplementedServiceServer) AddUser(context.Context, *AddUserRequest) (*AddUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddUser not implemented")
@@ -163,6 +193,42 @@ func _Service_AuthorizeUser_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServiceServer).AuthorizeUser(ctx, req.(*AuthUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Service_DisAuthorizeUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DisAuthUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).DisAuthorizeUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Service_DisAuthorizeUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).DisAuthorizeUser(ctx, req.(*DisAuthUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Service_CheckAuthorization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckAuthUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).CheckAuthorization(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Service_CheckAuthorization_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).CheckAuthorization(ctx, req.(*CheckAuthUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -267,6 +333,14 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AuthorizeUser",
 			Handler:    _Service_AuthorizeUser_Handler,
+		},
+		{
+			MethodName: "DisAuthorizeUser",
+			Handler:    _Service_DisAuthorizeUser_Handler,
+		},
+		{
+			MethodName: "CheckAuthorization",
+			Handler:    _Service_CheckAuthorization_Handler,
 		},
 		{
 			MethodName: "AddUser",

@@ -1,9 +1,7 @@
 package composites
 
 import (
-	
 	userd "passwords/internal/adapters/db/user"
-	configuration "passwords/internal/configuration/server"
 	"passwords/internal/domain/user"
 	"passwords/internal/pkg/dbclient"
 )
@@ -13,7 +11,7 @@ type UserComposite struct {
 	Service user.Service
 }
 
-func NewUserComposite(dbClient dbclient.DBClient, configuration *configuration.ServerConfiguration) *UserComposite {
+func NewUserComposite(dbClient dbclient.DBClient) *UserComposite {
 	storage := userd.NewStorage(dbClient)
 	service := user.NewService(storage)
 	return &UserComposite{

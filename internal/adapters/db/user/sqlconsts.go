@@ -5,7 +5,7 @@ const (
 
 	createOrUpdateIfExistsUsersTable = `
 	INSERT INTO public.users (user_id, password, name, surname, phone, created) 
-	VALUES ($1, $2, $3, $4)
+	VALUES ($1, $2, $3, $4, $5, $6)
 	ON CONFLICT (user_id) DO UPDATE 
   	SET password 	= $2,
 	  	name 		= $3,
@@ -13,7 +13,7 @@ const (
 		phone 		= $5,
 		created 		= $6; 
   	`
-	createUsersTable = `create table public.users
+	CreateUsersTable = `create table public.users
 	(	user_id 	varchar(40) not null primary key,
 		password  	TEXT not null,
 		name 		varchar(40),
@@ -23,7 +23,7 @@ const (
 		primary key (user_id)
 	);`
 
-	checkIfUsersTableExists = `SELECT 'public.users'::regclass;`
+	CheckIfUsersTableExists = `SELECT 'public.users'::regclass;`
 )
 
 // -d=postgres://postgres:mypassword@localhost:5432/yandex

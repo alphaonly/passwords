@@ -5,16 +5,15 @@ import (
 	"strings"
 )
 
-
 var (
 	ErrAccountOrPasswordIsEmpty = errors.New("account name or password is empty")
 	ErrUnknownCommand           = errors.New("unknown command")
 )
 
 func CommandParse(command string) (*CommandParseResponseDTO, error) {
-	
-	commandStrings:=make([]string,10)
-	
+
+	commandStrings := make([]string, 10)
+
 	commandStrings = strings.Split(command, " ")
 
 	switch commandStrings[0] {

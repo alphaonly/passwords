@@ -4,12 +4,13 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"passwords/internal/server"
+	"sync"
 
 	grpcService "passwords/internal/adapters/grpc"
 	"passwords/internal/composites"
 	configuration "passwords/internal/configuration/server"
 	"passwords/internal/pkg/dbclient/postgres"
-	"passwords/internal/pkg/server"
 )
 
 func main() {
@@ -19,19 +20,26 @@ func main() {
 	cfg := configuration.NewServerConf(configuration.UpdateSCFromEnvironment, configuration.UpdateSCFromFlags)
 
 	//postgres storage
-	DBclient := postgres.NewPostgresClient(ctx, cfg.DatabaseURI)
+	DBClient := postgres.NewPostgresClient(ctx, cfg.DatabaseURI)
 
 	//composites
-	userComposite := composites.NewUserComposite(DBclient, cfg)
-	accountComposite := composites.NewAccountComposite(DBclient, userComposite.Service, cfg)
+	userComposite := composites.NewUserComposite(DBClient)
+	accountComposite := composites.NewAccountComposite(DBClient)
 
-	//grpc
-	grpcService := grpcService.NewGRPCService(userComposite.Storage, accountComposite.Storage)
-	
+	//Authorized users
+	authorizedUsers := &sync.Map{}
+	//Last users operation
+	lastUserOperation := &sync.Map{}
+	//grpc service
+	gService := grpcService.NewGRPCService(userComposite.Storage, accountComposite.Storage, authorizedUsers, lastUserOperation)
 	//server
-	srv := server.NewServer(cfg, grpcService)
+	srv := server.NewServer(cfg, gService, authorizedUsers, lastUserOperation)
 
-	go srv.Run()
+	//Go-routine listens  to some port given in configuration
+	go srv.RunListener()
+	//Go-routine stops user authorization after some interval(given in configuration) of client operations absence,
+	//if there are no operations from client authorization stops
+	go srv.RunUserKicker(ctx)
 
 	osSignal := make(chan os.Signal, 1)
 	signal.Notify(osSignal, os.Interrupt)
