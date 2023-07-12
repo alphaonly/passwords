@@ -12,14 +12,14 @@ import (
 const ServerDefaultJSON = `{
 "RUN_ADDRESS":"localhost:8080",
 "DATABASE_URI": "postgres://postgres:mypassword@localhost:5432/yandex",
-"AUTH_TIMEOUT":200
+"AUTH_TIMEOUT": 100
 }`
 
 type ServerConfiguration struct {
 	RunAddress  string `json:"RUN_ADDRESS,omitempty"`
 	Port        string `json:"PORT,omitempty"`
 	DatabaseURI string `json:"DATABASE_URI,omitempty"`
-	AuthTimeout int    `json:"ACCRUAL_TIME,omitempty"`
+	AuthTimeout int    `json:"AUTH_TIMEOUT,omitempty"`
 	EnvChanged  map[string]bool
 }
 

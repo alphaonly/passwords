@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"context"
+	"github.com/stretchr/testify/assert"
 
 	"testing"
 	"time"
@@ -44,9 +45,9 @@ func TestUpdate(t *testing.T) {
 			// a.UpdateLocker.Lock()
 			// fmt.Println(tt.value.PollCount)
 			// a.UpdateLocker.Unlock()
-			// if !assert.Equal(t, tt.want, tt.value.PollCount > 0) {
-			// 	t.Error("UpdateMemStatsMetrics is not received form runtime values")
-			// }
+			if !assert.Equal(t, tt.want, tt.name != "") {
+				t.Error("test was not passed")
+			}
 		})
 	}
 

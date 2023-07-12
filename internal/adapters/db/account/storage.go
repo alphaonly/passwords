@@ -64,7 +64,7 @@ func (s accountStorage) SaveAccount(ctx context.Context, a accountDomain.Account
 		Login:     sql.NullString{String: a.Login, Valid: true},
 		Password:  sql.NullString{String: a.Password, Valid: true},
 		Descr:     sql.NullString{String: a.Description, Valid: true},
-		CreatedAt: sql.NullString{String: time.Time(a.Created).Format(time.RFC3339), Valid: true},
+		CreatedAt: sql.NullString{String: time.Now().Format(time.RFC3339), Valid: true},
 	}
 
 	conn, err := s.client.GetConn()

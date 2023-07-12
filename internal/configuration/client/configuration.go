@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-const ClientDefaultJSON = `{"ADDRESS":"localhost:8080"}`
+const ClientDefaultJSON = `{"ADDRESS":"localhost:8080","LOGIN":"testuser","PASSWORD":"1234"}`
 
 const COMMAND_HELP = `Commands: 	
 	For user's data:
@@ -34,10 +34,10 @@ const COMMAND_HELP = `Commands:
 `
 
 type ClientConfiguration struct {
-	Address    string `json:"ADDRESS,omitempty"`
-	Login      string `json:"LOGIN,omitempty"`
-	Password   string `json:"PASSWORD,omitempty"`
-	Command    string `json:"COMMAND,omitempty"`
+	Address  string `json:"ADDRESS,omitempty"`
+	Login    string `json:"LOGIN,omitempty"`
+	Password string `json:"PASSWORD,omitempty"`
+	//Command    string `json:"COMMAND,omitempty"`
 	EnvChanged map[string]bool
 }
 
@@ -81,7 +81,7 @@ func UpdateCCFromFlags(cc *ClientConfiguration) {
 		a = flag.String("a", cc.Address, "Domain name and :port")
 		l = flag.String("l", cc.Login, "User login")
 		p = flag.String("p", cc.Password, "User password")
-		c = flag.String("c", cc.Command, COMMAND_HELP)
+		//c = flag.String("c", cc.Command, COMMAND_HELP)
 
 		messageVariableUpdated  = "variable %v  has been overwritten from flags, value %v"
 		messageVariableReceived = "variable %v  received from flags, value %v"
@@ -102,9 +102,9 @@ func UpdateCCFromFlags(cc *ClientConfiguration) {
 	cc.EnvChanged["PASSWORD"] = true
 	log.Printf(messageVariableReceived, "PASSWORD", cc.Password)
 
-	cc.Command = *c
-	cc.EnvChanged["COMMAND"] = true
-	log.Printf(messageVariableReceived, "COMMAND", cc.Command)
+	//cc.Command = *c
+	//cc.EnvChanged["COMMAND"] = true
+	//log.Printf(messageVariableReceived, "COMMAND", cc.Command)
 }
 
 type VariableValue interface {

@@ -90,11 +90,8 @@ func (pc postgresClient) checkTables(ctx context.Context) error {
 	// check users table exists
 	err = CreateTable(ctx, pc, checkIfUsersTableExists, createUsersTable)
 	logging.LogFatalf("error:", err)
-	// check orders table exists
-	err = CreateTable(ctx, pc, checkIfOrdersTableExists, createOrdersTable)
-	logging.LogFatalf("error:", err)
-	// check withdrawals table exists
-	err = CreateTable(ctx, pc, checkIfWithdrawalsTableExists, createWithdrawalsTable)
+	// check accounts table exists
+	err = CreateTable(ctx, pc, checkIfAccountsTableExists, createAccountsTable)
 	logging.LogFatalf("error:", err)
 
 	return nil

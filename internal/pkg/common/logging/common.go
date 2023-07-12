@@ -14,9 +14,3 @@ func LogFatal(err error) {
 		log.Fatal(err)
 	}
 }
-
-func LogPrintln(err error) {
-	if err != nil {
-		log.Println(err)
-	}
-}
