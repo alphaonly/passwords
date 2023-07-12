@@ -17,6 +17,7 @@ import (
 	"time"
 )
 
+// tags
 var buildVersion = "N/A"
 var buildDate = "N/A"
 
